@@ -356,6 +356,61 @@ export interface AddAddendumInput {
   content: string;
 }
 
+export type ConsultationOutcome = 'resolved' | 'referred' | 'follow_up_needed';
+
+export interface ConsultationRecord {
+  id: string;
+  appointmentId: string;
+  notes: string;
+  outcome: ConsultationOutcome;
+  followUpAfterDays?: number | null;
+  recordedAt: string;
+}
+
+export interface RecordConsultationInput {
+  notes: string;
+  outcome: ConsultationOutcome;
+  followUpAfterDays?: number | null;
+}
+
+export interface ConsultationReferral {
+  id: string;
+  consultationId: string;
+  targetSpecialty: string;
+  reason: string;
+  status: ReferralStatus;
+  createdAt: string;
+}
+
+export interface CreateConsultationReferralInput {
+  targetSpecialty: string;
+  reason: string;
+}
+
+export interface ConsultationPrescriptionInput {
+  orderType: 'prescription';
+  medication: string;
+  dose: string;
+  instructions?: string | null;
+}
+
+export interface ConsultationLabOrderInput {
+  orderType: 'lab_order';
+  testName: string;
+  instructions?: string | null;
+}
+
+export type ConsultationOrderInput = ConsultationPrescriptionInput | ConsultationLabOrderInput;
+
+export interface ConsultationIssuedOrder {
+  id: string;
+  consultationId: string;
+  orderType: ConsultationOrderInput['orderType'];
+  medicationOrTest: string;
+  instructions?: string | null;
+  issuedAt: string;
+}
+
 // --- Phase W3 — Doctor Practice Insights (issue #50, depends on docforum-core#124) ---
 
 export type DateRangePreset = '7d' | '30d' | '90d' | 'custom';

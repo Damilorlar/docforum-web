@@ -211,6 +211,29 @@ describe('consultation notes', () => {
       consultationService.signOffNote('not-demo-signed', MOCK_ACCESS_TOKEN),
     ).rejects.toMatchObject({ status: 409 });
   });
+
+  it('records an outcome, referral, and issued order', async () => {
+    const record = await consultationService.recordConsultation(
+      'apt-demo-2',
+      { notes: 'Demo outcome notes (fake).', outcome: 'referred' },
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(record.outcome).toBe('referred');
+
+    const referral = await consultationService.createConsultationReferral(
+      record.id,
+      { targetSpecialty: 'Cardiology', reason: 'Demo referral reason (fake).' },
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(referral.status).toBe('pending');
+
+    const order = await consultationService.issueConsultationOrder(
+      record.id,
+      { orderType: 'lab_order', testName: 'Demo blood panel (fake)' },
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(order.medicationOrTest).toBe('Demo blood panel (fake)');
+  });
 });
 
 describe('patient orders', () => {

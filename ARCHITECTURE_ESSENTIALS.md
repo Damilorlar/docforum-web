@@ -176,6 +176,13 @@ Undo behaviour: start/complete are applied optimistically and can be reverted wi
 - `POST /consultation-notes/:id/addenda` (body: `{content}`) → `ConsultationAddendum` — append-only; no edit/delete UI for addenda.
 - Auto sign-off deadline, if present, is exposed as `autoSignOffAt` on the note.
 
+#### Consultation outcome, referral & order issuance (issue #7)
+- `POST /appointments/:appointmentId/consultation` (body: `{notes, outcome: 'resolved'|'referred'|'follow_up_needed', followUpAfterDays?}`) → `ConsultationRecord`. The consultation record is the doctor's outcome decision and is distinct from the sign-off note above. `followUpAfterDays` is required for `follow_up_needed` (whole number, 1–90) and must be `null` otherwise.
+- `POST /consultations/:id/referrals` (body: `{targetSpecialty, reason}`) → `ConsultationReferral` — created only when the outcome is `referred`; specialty and reason are required. `status` reuses `ReferralStatus` and starts as `pending`.
+- `POST /consultations/:id/orders` (body: `{orderType: 'prescription', medication, dose, instructions?}` or `{orderType: 'lab_order', testName, instructions?}`) → `ConsultationIssuedOrder` — optional single order issued with the consultation.
+- Submission is sequential: record the consultation first, then create the referral/order using the returned consultation id. If a follow-up call fails, the UI keeps the recorded consultation, shows a partial-success error, and never silently retries the record (avoiding duplicates).
+- The outcome panel reuses the note editor's current draft as `notes`, so the doctor writes the consultation note once. All three endpoints are assumed until docforum-core lands the consultation contract.
+
 #### Doctor practice insights (issue #50, depends on docforum-core#124)
 - `GET /doctor/insights?preset=&startDate=&endDate=` → `DoctorPracticeInsights`
 - Scoped strictly to the authenticated doctor's own practice data; peer-comparison suppression guarantees no benchmarking against other named doctors.

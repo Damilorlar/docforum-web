@@ -9,7 +9,10 @@ import type {
   Appointment,
   CareThread,
   ConsultationAddendum,
+  ConsultationIssuedOrder,
   ConsultationNote,
+  ConsultationRecord,
+  ConsultationReferral,
   DataExport,
   Dependent,
   DoctorPracticeInsights,
@@ -82,6 +85,9 @@ export interface MockDb {
   runningDelay: RunningDelay;
   messageThreads: MessageThread[];
   consultationNotes: ConsultationNote[];
+  consultationRecords: ConsultationRecord[];
+  consultationReferrals: ConsultationReferral[];
+  consultationOrders: ConsultationIssuedOrder[];
   insights: DoctorPracticeInsights;
   facilities: FacilityWithDistance[];
   facilityMembers: FacilityMember[];
@@ -823,6 +829,9 @@ export function createSeedDb(): MockDb {
     runningDelay,
     messageThreads,
     consultationNotes,
+    consultationRecords: [],
+    consultationReferrals: [],
+    consultationOrders: [],
     insights,
     facilities,
     facilityMembers,
