@@ -18,6 +18,7 @@ import type {
   FacilityWithDistance,
   FulfillmentQueueItem,
   HealthEntry,
+  IntakeForm,
   MessageThread,
   PatientOrder,
   PaymentIntent,
@@ -77,6 +78,7 @@ export interface MockDb {
   dataExport: DataExport | null;
   careThreads: CareThread[];
   appointments: Appointment[];
+  intakeForms: IntakeForm[];
   runningDelay: RunningDelay;
   messageThreads: MessageThread[];
   consultationNotes: ConsultationNote[];
@@ -295,6 +297,33 @@ export function createSeedDb(): MockDb {
       checkInAt: null,
       startedAt: null,
       completedAt: null,
+    },
+  ];
+
+  const intakeForms: IntakeForm[] = [
+    {
+      id: 'itk-demo-1',
+      appointmentId: 'apt-demo-3',
+      patientProfileId: 'prf-patient-3',
+      submittedAt: '2026-10-18T09:18:00.000Z',
+      chiefComplaint: 'Demo prescription review (fake)',
+      symptomDuration: '2 days',
+      severity: 4,
+      currentMedications: ['Demo Metformin 850mg (fake)'],
+      allergies: ['None recorded'],
+      notes: 'Demo intake note (fake).',
+    },
+    {
+      id: 'itk-demo-2',
+      appointmentId: 'apt-demo-4',
+      patientProfileId: 'prf-patient-4',
+      submittedAt: '2026-10-18T09:45:00.000Z',
+      chiefComplaint: 'Demo new concern (fake)',
+      symptomDuration: null,
+      severity: null,
+      currentMedications: [],
+      allergies: ['Demo penicillin allergy (fake)'],
+      notes: null,
     },
   ];
 
@@ -790,6 +819,7 @@ export function createSeedDb(): MockDb {
     dataExport,
     careThreads,
     appointments,
+    intakeForms,
     runningDelay,
     messageThreads,
     consultationNotes,

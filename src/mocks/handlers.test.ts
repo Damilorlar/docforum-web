@@ -16,6 +16,7 @@ import * as accountService from '../services/account-service';
 import * as careThreadService from '../services/care-thread-service';
 import * as consultationService from '../services/consultation-service';
 import * as dependentsService from '../services/dependents-service';
+import * as doctorTodayService from '../services/doctor-today-service';
 import * as facilityService from '../services/facility-service';
 import * as facilityTeamService from '../services/facility-team-service';
 import * as healthService from '../services/health-profile-service';
@@ -241,6 +242,17 @@ describe('patient orders', () => {
         MOCK_ACCESS_TOKEN,
       ),
     ).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+describe('doctor today', () => {
+  it('returns a structured intake for an appointment and 404s when missing', async () => {
+    const intake = await doctorTodayService.getAppointmentIntake('apt-demo-3', MOCK_ACCESS_TOKEN);
+    expect(intake?.chiefComplaint).toContain('Demo');
+
+    await expect(
+      doctorTodayService.getAppointmentIntake('apt-demo-2', MOCK_ACCESS_TOKEN),
+    ).rejects.toMatchObject({ status: 404 });
   });
 });
 

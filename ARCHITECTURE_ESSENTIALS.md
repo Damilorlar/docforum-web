@@ -147,14 +147,16 @@ store). Every patient API call and React Query key includes the selected
 
 ### Phase W3 — Doctor core flow (assumed, not yet in docforum-core)
 
-These shapes back issues #45–#49. docforum-core issues #61 (message thread),
-#129 (in-person check-in / live queue position) and the today's-appointments
-consultation contracts are not landed yet, so the endpoints below are the
-smallest reasonable assumption and must be reconciled once the real API
-exists.
+These shapes back issues #6, #7 and #45–#49. docforum-core issues #61 (message
+thread), #129 (in-person check-in / live queue position) and the
+today's-appointments/consultation contracts are not landed yet, so the
+endpoints below are the smallest reasonable assumption and must be reconciled
+once the real API exists.
 
-#### Today's appointments & live queue (issue #49, depends on #6)
+#### Today's appointments & live queue (issues #6 and #49)
 - `GET /doctor/appointments/today` → `Appointment[]` — today's appointments for the signed-in doctor, ordered by `startsAt`.
+- `GET /appointments/:id/intake` → `IntakeForm | null` — the structured intake the patient submitted for that appointment. `404` means no intake was submitted; the UI shows that as an empty state, not an error. The endpoint is doctor-scoped: it must only return intake for appointments assigned to the signed-in doctor.
+- `IntakeForm` shape: `{id, appointmentId, patientProfileId, submittedAt, chiefComplaint, symptomDuration?, severity?: number|null (0–10), currentMedications: string[], allergies: string[], notes?}`.
 - `GET /doctor/queue/today` → `QueueEntry[]` — checked-in patients in queue order (computed server-side from `checkInAt`).
 - `POST /appointments/:id/start` → `Appointment` — marks a checked-in visit `in_progress` (sets `startedAt`). Idempotent if already started.
 - `POST /appointments/:id/complete` → `Appointment` — marks an in-progress visit `completed` (sets `completedAt`).

@@ -5,6 +5,7 @@ import { authHandlers } from './handlers/auth';
 import { careThreadHandlers } from './handlers/care-thread';
 import { consultationHandlers } from './handlers/consultation';
 import { dependentHandlers } from './handlers/dependents';
+import { doctorTodayHandlers } from './handlers/doctor-today';
 import { facilityTeamHandlers } from './handlers/facility-team';
 import { facilityHandlers } from './handlers/facility';
 import { healthProfileHandlers } from './handlers/health-profile';
@@ -21,6 +22,7 @@ export const handlers = [
   ...healthProfileHandlers,
   ...careThreadHandlers,
   ...consultationHandlers,
+  ...doctorTodayHandlers,
   ...queueHandlers,
   ...messagingHandlers,
   ...insightsHandlers,

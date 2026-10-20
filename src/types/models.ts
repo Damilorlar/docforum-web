@@ -290,6 +290,19 @@ export interface Appointment {
   completedAt?: string | null;
 }
 
+export interface IntakeForm {
+  id: string;
+  appointmentId: string;
+  patientProfileId: string;
+  submittedAt: string;
+  chiefComplaint: string;
+  symptomDuration?: string | null;
+  severity?: number | null;
+  currentMedications: string[];
+  allergies: string[];
+  notes?: string | null;
+}
+
 export interface QueueEntry {
   appointmentId: string;
   patientProfileId: string;
