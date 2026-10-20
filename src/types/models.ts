@@ -210,6 +210,57 @@ export interface FacilityWithDistance extends FacilityProfile {
   rating?: number;
 }
 
+// --- Patient orders and facility selection (Phase W2, issue #5) -------------
+
+export type OrderLifecycleStatus = 'active' | 'completed' | 'cancelled' | 'superseded';
+
+export interface OrderFacilitySummary {
+  id: string;
+  name: string;
+  type: FacilityType;
+  isOpen?: boolean;
+}
+
+interface OrderVersionBase {
+  id: string;
+  patientProfileId: string;
+  version: number;
+  supersedesId: string | null;
+  status: OrderLifecycleStatus;
+  issuedAt: string;
+  issuedByDoctorName?: string | null;
+  requiresFacilitySelection: boolean;
+  selectedFacility?: OrderFacilitySummary | null;
+}
+
+export interface Prescription extends OrderVersionBase {
+  orderType: 'prescription';
+  medication: string;
+  dose: string;
+  quantity?: string | null;
+  instructions?: string | null;
+}
+
+export interface LabOrder extends OrderVersionBase {
+  orderType: 'lab_order';
+  testName: string;
+  fastingRequired?: boolean | null;
+  instructions?: string | null;
+}
+
+export type PatientOrder = Prescription | LabOrder;
+
+export interface QualifiedOrderFacility extends FacilityProfile {
+  location?: FacilityLocation;
+  isOpen: boolean;
+  capabilities: string[];
+}
+
+export interface SelectOrderFacilityInput {
+  facilityId: string;
+  expectedVersion: number;
+}
+
 // --- Phase W3 — Doctor core flow (assumed, docforum-core issues #61/#129 not
 // landed yet) ---------------------------------------------------------------
 // These shapes mirror the smallest contract needed to build the doctor's

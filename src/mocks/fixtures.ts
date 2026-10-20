@@ -19,7 +19,9 @@ import type {
   FulfillmentQueueItem,
   HealthEntry,
   MessageThread,
+  PatientOrder,
   PaymentIntent,
+  QualifiedOrderFacility,
   RunningDelay,
   User,
   WalletLink,
@@ -83,6 +85,8 @@ export interface MockDb {
   facilityMembers: FacilityMember[];
   facilityInvites: FacilityInvite[];
   fulfillmentQueue: FulfillmentQueueItem[];
+  patientOrders: PatientOrder[];
+  orderFacilities: Record<string, QualifiedOrderFacility[]>;
   walletLink: WalletLink | null;
   paymentIntents: PaymentIntent[];
   consultationAddenda: ConsultationAddendum[]; // flattened, noteId-keyed lookups below
@@ -591,6 +595,142 @@ export function createSeedDb(): MockDb {
     },
   ];
 
+  const patientOrders: PatientOrder[] = [
+    {
+      id: 'ord-demo-rx-102',
+      patientProfileId: PATIENT_PROFILE_ID,
+      orderType: 'prescription',
+      version: 2,
+      supersedesId: 'ord-demo-rx-101',
+      status: 'active',
+      issuedAt: '2026-10-18T08:30:00.000Z',
+      issuedByDoctorName: 'Dr. Ficticia Example (fake)',
+      requiresFacilitySelection: true,
+      selectedFacility: null,
+      medication: 'Demo Amoxicillin 500mg (fake)',
+      dose: 'One capsule three times daily',
+      quantity: '30 capsules',
+      instructions: 'Demo instructions (fake): take with food for ten days.',
+    },
+    {
+      id: 'ord-demo-rx-101',
+      patientProfileId: PATIENT_PROFILE_ID,
+      orderType: 'prescription',
+      version: 1,
+      supersedesId: null,
+      status: 'superseded',
+      issuedAt: '2026-10-17T08:30:00.000Z',
+      issuedByDoctorName: 'Dr. Ficticia Example (fake)',
+      requiresFacilitySelection: true,
+      selectedFacility: null,
+      medication: 'Demo Amoxicillin 250mg (fake)',
+      dose: 'One capsule three times daily',
+      quantity: '30 capsules',
+      instructions: 'Superseded by a corrected dose.',
+    },
+    {
+      id: 'ord-demo-lab-101',
+      patientProfileId: PATIENT_PROFILE_ID,
+      orderType: 'lab_order',
+      version: 1,
+      supersedesId: null,
+      status: 'active',
+      issuedAt: '2026-10-18T09:00:00.000Z',
+      issuedByDoctorName: 'Dr. Ficticia Example (fake)',
+      requiresFacilitySelection: true,
+      selectedFacility: null,
+      testName: 'Demo full blood count (fake)',
+      fastingRequired: true,
+      instructions: 'Demo instructions (fake): fasting sample required.',
+    },
+    {
+      id: 'ord-demo-rx-100',
+      patientProfileId: PATIENT_PROFILE_ID,
+      orderType: 'prescription',
+      version: 1,
+      supersedesId: null,
+      status: 'completed',
+      issuedAt: '2026-09-20T08:30:00.000Z',
+      issuedByDoctorName: 'Dr. Ficticia Example (fake)',
+      requiresFacilitySelection: true,
+      selectedFacility: {
+        id: FACILITY_ID,
+        name: 'Demo Pharmacy (fake)',
+        type: 'pharmacy',
+        isOpen: true,
+      },
+      medication: 'Demo Vitamin D 1000 IU (fake)',
+      dose: 'One tablet daily',
+      quantity: '30 tablets',
+      instructions: null,
+    },
+  ];
+
+  const orderFacilities: Record<string, QualifiedOrderFacility[]> = {
+    'ord-demo-rx-102': [
+      {
+        id: FACILITY_ID,
+        userId: 'usr-facility-demo',
+        name: 'Demo Pharmacy (fake)',
+        type: 'pharmacy',
+        location: {
+          address: '1 Fixture Lane',
+          city: 'Sampleton',
+          latitude: 6.5244,
+          longitude: 3.3792,
+        },
+        isOpen: true,
+        capabilities: ['Prescription dispensing'],
+      },
+      {
+        id: 'fac-demo-pharmacy-2',
+        userId: 'usr-facility-pharmacy-2',
+        name: 'Example Chemist (fake)',
+        type: 'pharmacy',
+        location: {
+          address: '3 Example Street',
+          city: 'Mockford',
+          latitude: 6.6,
+          longitude: 3.45,
+        },
+        isOpen: false,
+        capabilities: ['Prescription dispensing'],
+      },
+    ],
+    'ord-demo-rx-101': [
+      {
+        id: FACILITY_ID,
+        userId: 'usr-facility-demo',
+        name: 'Demo Pharmacy (fake)',
+        type: 'pharmacy',
+        location: {
+          address: '1 Fixture Lane',
+          city: 'Sampleton',
+          latitude: 6.5244,
+          longitude: 3.3792,
+        },
+        isOpen: true,
+        capabilities: ['Prescription dispensing'],
+      },
+    ],
+    'ord-demo-lab-101': [
+      {
+        id: 'fac-demo-lab',
+        userId: 'usr-facility-lab',
+        name: 'Demo Lab (fake)',
+        type: 'lab',
+        location: {
+          address: '2 Fixture Lane',
+          city: 'Sampleton',
+          latitude: 6.5312,
+          longitude: 3.3915,
+        },
+        isOpen: true,
+        capabilities: ['Sample collection', 'Lab result delivery'],
+      },
+    ],
+  };
+
   const walletLink: WalletLink = {
     id: 'wln-demo-1',
     facilityId: FACILITY_ID,
@@ -658,6 +798,8 @@ export function createSeedDb(): MockDb {
     facilityMembers,
     facilityInvites,
     fulfillmentQueue,
+    patientOrders,
+    orderFacilities,
     walletLink,
     paymentIntents,
     consultationAddenda,

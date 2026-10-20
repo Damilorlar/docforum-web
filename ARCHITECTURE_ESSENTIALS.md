@@ -136,6 +136,15 @@ store). Every patient API call and React Query key includes the selected
 - OpenStreetMap tiles with attribution.
 - Patient location is requested with transparent consent, kept strictly in transient memory, and NEVER persisted to storage or URLs.
 
+#### Orders list and facility selection (docforum-core#11/#14, issue #5)
+- `GET /orders/mine` → `PatientOrder[]` — every version of the patient's prescriptions and lab orders, not only the current one. `PatientOrder` is a discriminated union on `orderType`:
+  - prescription: `{id, patientProfileId, orderType: 'prescription', version, supersedesId, status, issuedAt, issuedByDoctorName?, requiresFacilitySelection, selectedFacility?, medication, dose, quantity?, instructions?}`
+  - lab order: `{id, patientProfileId, orderType: 'lab_order', version, supersedesId, status, issuedAt, issuedByDoctorName?, requiresFacilitySelection, selectedFacility?, testName, fastingRequired?, instructions?}`
+  - `status` is `active | completed | cancelled | superseded`; `selectedFacility` is `{id, name, type, isOpen?}`.
+- The current version is derived client-side from the supersedes chain (`features/orders/current-orders.ts`), never from array order: the terminal record (no other record supersedes it) with the highest `version` wins, and earlier versions remain visible as history. This deliberately works even if the API returns versions out of order.
+- `GET /orders/:orderId/qualified-facilities` → `QualifiedOrderFacility[]` = `{id, userId, name, type, isOpen, capabilities, location?}`. The backend's capability matching (docforum-core#14) is the only source of this list; the UI never infers eligibility from facility type.
+- `POST /orders/:orderId/fulfillment-facility` (body: `{facilityId, expectedVersion}`) → the updated `PatientOrder`. `expectedVersion` lets docforum-core answer `409` if the order changed while the patient was choosing; the UI then asks the patient to reload rather than silently overwriting a correction.
+
 ### Phase W3 — Doctor core flow (assumed, not yet in docforum-core)
 
 These shapes back issues #45–#49. docforum-core issues #61 (message thread),

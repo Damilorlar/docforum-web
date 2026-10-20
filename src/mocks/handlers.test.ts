@@ -21,6 +21,7 @@ import * as facilityTeamService from '../services/facility-team-service';
 import * as healthService from '../services/health-profile-service';
 import * as insightsService from '../services/insights-service';
 import * as messagingService from '../services/messaging-service';
+import * as ordersService from '../services/orders-service';
 import * as paymentsService from '../services/payments-service';
 import * as queueService from '../services/queue-service';
 import { FACILITY_ID, PATIENT_PROFILE_ID } from './fixtures';
@@ -207,6 +208,38 @@ describe('consultation notes', () => {
   it('409s when signing off twice', async () => {
     await expect(
       consultationService.signOffNote('not-demo-signed', MOCK_ACCESS_TOKEN),
+    ).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+describe('patient orders', () => {
+  it('lists every version and selects a qualified facility for the current order', async () => {
+    const orders = await ordersService.listMyOrders(MOCK_ACCESS_TOKEN);
+    expect(orders.length).toBeGreaterThan(1);
+    expect(orders.some((order) => order.id === 'ord-demo-rx-101')).toBe(true);
+
+    const facilities = await ordersService.listQualifiedFacilities(
+      'ord-demo-rx-102',
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(facilities.map((facility) => facility.id)).toEqual([
+      FACILITY_ID,
+      'fac-demo-pharmacy-2',
+    ]);
+
+    const selected = await ordersService.selectFulfillingFacility(
+      'ord-demo-rx-102',
+      { facilityId: FACILITY_ID, expectedVersion: 2 },
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(selected.selectedFacility?.id).toBe(FACILITY_ID);
+
+    await expect(
+      ordersService.selectFulfillingFacility(
+        'ord-demo-rx-102',
+        { facilityId: FACILITY_ID, expectedVersion: 1 },
+        MOCK_ACCESS_TOKEN,
+      ),
     ).rejects.toMatchObject({ status: 409 });
   });
 });
