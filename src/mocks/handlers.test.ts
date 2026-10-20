@@ -19,6 +19,7 @@ import * as dependentsService from '../services/dependents-service';
 import * as doctorTodayService from '../services/doctor-today-service';
 import * as facilityService from '../services/facility-service';
 import * as facilityTeamService from '../services/facility-team-service';
+import * as fulfillmentService from '../services/fulfillment-service';
 import * as healthService from '../services/health-profile-service';
 import * as insightsService from '../services/insights-service';
 import * as messagingService from '../services/messaging-service';
@@ -412,6 +413,49 @@ describe('facility team', () => {
     expect(updated.status).toBe('fulfilled');
     expect(updated.attribution?.performedByRole).toBe('owner');
     expect(updated.attribution?.action).toBe('dispensed');
+  });
+});
+
+describe('facility fulfillment queue', () => {
+  it('moves items in progress, refuses closed items, and attaches lab results', async () => {
+    const moved = await fulfillmentService.updateFulfillmentStatus(
+      FACILITY_ID,
+      'fuq-demo-1',
+      'in_progress',
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(moved.status).toBe('in_progress');
+    expect(moved.attribution?.action).toBe('verified');
+
+    await expect(
+      fulfillmentService.updateFulfillmentStatus(
+        FACILITY_ID,
+        'fuq-demo-3',
+        'rejected',
+        MOCK_ACCESS_TOKEN,
+      ),
+    ).rejects.toMatchObject({ status: 409 });
+
+    const file = new File(['demo lab result'], 'demo-result.pdf', {
+      type: 'application/pdf',
+    });
+    const uploaded = await fulfillmentService.uploadFulfillmentLabResult(
+      FACILITY_ID,
+      'fuq-demo-2',
+      file,
+      MOCK_ACCESS_TOKEN,
+    );
+    expect(uploaded.labResult?.fileName).toBe('demo-result.pdf');
+    expect(uploaded.labResult?.sizeBytes).toBe(file.size);
+
+    await expect(
+      fulfillmentService.uploadFulfillmentLabResult(
+        FACILITY_ID,
+        'fuq-demo-1',
+        file,
+        MOCK_ACCESS_TOKEN,
+      ),
+    ).rejects.toMatchObject({ status: 409 });
   });
 });
 

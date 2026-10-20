@@ -533,6 +533,16 @@ export interface FulfillmentActionAttribution {
   notes?: string | null;
 }
 
+export interface FulfillmentLabResult {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  uploadedByUserId: string;
+  storageKey?: string | null;
+  downloadUrl?: string | null;
+}
+
 export interface FulfillmentQueueItem {
   id: string;
   facilityId: string;
@@ -545,7 +555,10 @@ export interface FulfillmentQueueItem {
   status: FulfillmentItemStatus;
   receivedAt: string;
   attribution?: FulfillmentActionAttribution | null;
+  labResult?: FulfillmentLabResult | null;
 }
+
+export type FulfillmentStatusUpdate = 'in_progress' | 'fulfilled' | 'rejected';
 
 // --- Phase W4 — Scan-to-verify orders (issue #52, docforum-core#71) ---
 
