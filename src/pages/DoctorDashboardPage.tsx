@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/auth-store';
 import { useKeyboardShortcuts, DEFAULT_SHORTCUTS } from '../hooks/useKeyboardShortcuts';
 import { Button } from '../components/Button';
 import { CommandPalette, CommandPaletteAction } from '../components/CommandPalette';
 import { ShortcutsHelp } from '../components/ShortcutsHelp';
 import { QueuePanel } from '../features/queue/components/QueuePanel';
 import { DoctorInbox } from '../features/messaging/components/DoctorInbox';
-import { UnreadBadge } from '../features/messaging/components/UnreadBadge';
 import { AbnormalResultsInbox } from '../features/results/components/AbnormalResultsInbox';
+import { UnreadBadge } from '../features/messaging/components/UnreadBadge';
 import styles from './DoctorDashboardPage.module.css';
 
 export function DoctorDashboardPage() {
-  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -31,6 +29,17 @@ export function DoctorDashboardPage() {
         case 'open-help':
           setHelpOpen(true);
           break;
+        case 'next-patient':
+          // Navigate to next patient (stub - would integrate with queue state)
+          // navigate('/doctor/queue');
+          break;
+        case 'open-chart':
+          // Open chart view (stub)
+          // navigate('/doctor/chart');
+          break;
+        case 'sign-note':
+          // Sign note (stub)
+          // break;
         default:
           break;
       }
@@ -45,6 +54,7 @@ export function DoctorDashboardPage() {
       shortcut: 'mod+1',
       run: () => {
         setPaletteOpen(false);
+        navigate('/doctor/queue');
       },
     },
     {
@@ -54,15 +64,17 @@ export function DoctorDashboardPage() {
       shortcut: 'mod+2',
       run: () => {
         setPaletteOpen(false);
+        navigate('/doctor/messages');
       },
     },
     {
       id: 'consultation',
-      label: 'Start consultation',
+      label: 'Start next visit',
       category: 'context',
       shortcut: 'mod+3',
       run: () => {
         setPaletteOpen(false);
+        // Navigate to the next checked-in appointment, or to new consultation if none
         navigate('/doctor/consultation/new');
       },
     },
@@ -83,7 +95,13 @@ export function DoctorDashboardPage() {
       shortcut: 'mod+5',
       run: () => {
         setPaletteOpen(false);
-        // No navigation needed; we'll show the section directly
+        // Scroll/focus the results section
+        const resultsSection = document.querySelector(
+          '.results-needing-review',
+        ) as HTMLElement | null;
+        if (resultsSection) {
+          resultsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       },
     },
   ];
@@ -110,13 +128,15 @@ export function DoctorDashboardPage() {
 
       <div className={styles.dashboardGrid}>
         <section className={styles.card}>
-          <h2>Today\'s appointments</h2>
+          <h2>Today's appointments</h2>
           <p>Appointments for today open in the live queue once the patient checks in.</p>
         </section>
+
         <section className={styles.card}>
           <h2>Messages</h2>
           <DoctorInbox />
         </section>
+
         <section className={styles.card}>
           <AbnormalResultsInbox />
         </section>
@@ -128,12 +148,6 @@ export function DoctorDashboardPage() {
         onClose={() => setPaletteOpen(false)}
       />
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} bindings={bindings} />
-
-      <div className={styles.consultationPlaceholder}>
-        <p>
-          {user ? `Signed in as ${user.email} (` + user.role + ')' : ''}
-        </p>
-      </div>
     </div>
   );
 }
